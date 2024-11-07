@@ -1,0 +1,24 @@
+{
+  "name": "baileys-api",
+  "type": "module",
+  "scripts": {
+    "dev": "source .env && tsx watch src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.5",
+    "@whiskeysockets/baileys": "^6.7.9",
+    "hono": "^4.6.9",
+    "mongoose": "^8.8.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.17",
+    "eslint": "^9.14.0",
+    "tsx": "^4.7.1",
+    "typescript": "^5.6.3"
+  },
+  "trustedDependencies": [
+    "protobufjs"
+  ]
+}
