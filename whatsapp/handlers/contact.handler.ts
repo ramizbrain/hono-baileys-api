@@ -1,5 +1,9 @@
 import * as baileys from "@whiskeysockets/baileys";
-import ContactModel from "../../models/whatsapp/ContactModel.js";
+import ContactModel, {
+	type IContactModel,
+} from "../../models/whatsapp/ContactModel.js";
+import type { IGroupMetaData } from "../../models/whatsapp/GroupMetaDataModel.js";
+import GroupMetaDataModel from "../../models/whatsapp/GroupMetaDataModel.js";
 import type { BaileysEventHandler } from "../../types/baileys.js";
 import type { IHandler } from "../contracts/IHandler.js";
 
@@ -12,20 +16,50 @@ export default class ContactHandler implements IHandler {
 
 	async bulkWrite(contacts: Partial<baileys.Contact>[]) {
 		try {
-			const processedContacts = contacts.map((contact) => {
-				return {
-					jid: baileys.jidNormalizedUser(contact?.id),
-					sessionId: this.sessionId,
-					name: contact?.name,
-					verifiedName: contact?.verifiedName,
-				};
-			});
+			const processedContacts: Omit<IContactModel, "_id">[] = [];
+			const processedGroups: Omit<IGroupMetaData, "_id">[] = [];
+
+			await Promise.all(
+				contacts.map(async (contact) => {
+					const jid = baileys.jidNormalizedUser(contact?.id);
+					if (baileys.isJidUser(jid)) {
+						processedContacts.push({
+							jid: baileys.jidNormalizedUser(contact?.id),
+							sessionId: this.sessionId,
+							name: contact?.name,
+							verifiedName: contact?.verifiedName,
+						});
+					} else if (baileys.isJidGroup(jid)) {
+						const metadata: IGroupMetaData | null =
+							await GroupMetaDataModel.findOne({
+								sessionId: this.sessionId,
+								chatId: jid,
+							});
+						processedGroups.push({
+							chatId: jid,
+							sessionId: this.sessionId,
+							subject: contact?.name || metadata?.subject || "",
+							participants: metadata?.participants || [],
+						});
+					}
+				})
+			);
 
 			await ContactModel.bulkWrite(
 				processedContacts.map((contact) => ({
 					updateOne: {
 						filter: { jid: contact.jid, sessionId: this.sessionId },
 						update: { $set: contact },
+						upsert: true,
+					},
+				}))
+			);
+
+			await GroupMetaDataModel.bulkWrite(
+				processedGroups.map((group) => ({
+					updateOne: {
+						filter: { chatId: group.chatId, sessionId: this.sessionId },
+						update: { $set: group },
 						upsert: true,
 					},
 				}))

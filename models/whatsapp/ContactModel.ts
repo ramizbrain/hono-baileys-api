@@ -4,8 +4,8 @@ import { z } from "zod";
 export const ContactModelSchema = z.object({
 	_id: z.custom<Schema.Types.ObjectId>(),
 	jid: z.string(),
-	name: z.string().nullable(),
-	verifiedName: z.string().nullable(),
+	name: z.string().optional(),
+	verifiedName: z.string().optional(),
 	sessionId: z.string(),
 });
 
