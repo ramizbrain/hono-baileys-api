@@ -10,9 +10,11 @@ import WhatsappAuthState from "../models/whatsapp/WhatsappAuthState.js";
 import { WAStatus } from "../types/status-connection.js";
 import { logger } from "../utils/logger.js";
 import { initSession } from "./auth-session.js";
+import { Store } from "./store.js";
 
 export type Session = WASocket & {
 	destroy: () => Promise<void>;
+	store: Store;
 	waStatus?: WAStatus;
 };
 
@@ -25,9 +27,9 @@ export default class WhatsappClient {
 	private static retries = new Map<SessionId, number>();
 
 	static async init() {
-		const storedSession = await WhatsappAuthState.find();
-		for (const session of storedSession) {
-			await WhatsappClient.createSession(session.sessionId);
+		const storedSession = await WhatsappAuthState.distinct("sessionId");
+		for (const sessionId of storedSession) {
+			await WhatsappClient.createSession(sessionId);
 		}
 	}
 
@@ -54,11 +56,17 @@ export default class WhatsappClient {
 
 		const destroy = async (logout = true) => {
 			try {
-				await Promise.all([logout && socket.logout()]);
+				await Promise.all([
+					logout && socket.logout(),
+					WhatsappAuthState.deleteMany({
+						sessionId,
+					}),
+				]);
 				console.info({ session: sessionId }, "Session destroyed");
 			} catch (e) {
 				console.error(e, "An error occurred during session destroy");
 			} finally {
+				this.sessions.get(sessionId)?.store.unlisten();
 				this.sessions.delete(sessionId);
 				this.updateWaConnection(sessionId, WAStatus.Disconected);
 			}
@@ -76,6 +84,8 @@ export default class WhatsappClient {
 				destroy(doNotReconnect);
 				return;
 			}
+
+			console.log(restartRequired, "restar recored");
 
 			// if (!restartRequired) {
 			// 	console.info(
@@ -104,9 +114,12 @@ export default class WhatsappClient {
 			generateHighQualityLinkPreview: true,
 		});
 
+		const store = new Store(sessionId, socket.ev);
+
 		this.sessions.set(sessionId, {
 			...socket,
 			waStatus: WAStatus.Unknown,
+			store,
 			destroy,
 		});
 
@@ -149,9 +162,6 @@ export default class WhatsappClient {
 	}
 
 	static async deleteSession(sessionId: string) {
-		await WhatsappAuthState.deleteMany({
-			sessionId,
-		});
 		this.sessions.get(sessionId)?.destroy();
 	}
 
