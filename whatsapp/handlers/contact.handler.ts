@@ -1,7 +1,7 @@
 import * as baileys from "@whiskeysockets/baileys";
 import ContactModel from "../../models/whatsapp/ContactModel.js";
 import type { BaileysEventHandler } from "../../types/baileys.js";
-import type { IHandler } from "../contracts/ihandler.js";
+import type { IHandler } from "../contracts/IHandler.js";
 
 export default class ContactHandler implements IHandler {
 	private listening = false;

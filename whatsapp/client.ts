@@ -58,6 +58,7 @@ export default class WhatsappClient {
 			try {
 				await Promise.all([
 					logout && socket.logout(),
+
 					WhatsappAuthState.deleteMany({
 						sessionId,
 					}),
@@ -66,8 +67,9 @@ export default class WhatsappClient {
 			} catch (e) {
 				console.error(e, "An error occurred during session destroy");
 			} finally {
-				this.sessions.get(sessionId)?.store.unlisten();
+				await new Promise((resolve) => setTimeout(resolve, 1000));
 				this.sessions.delete(sessionId);
+				this.sessions.get(sessionId)?.store.unlisten();
 				this.updateWaConnection(sessionId, WAStatus.Disconected);
 			}
 		};
