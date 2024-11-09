@@ -1,9 +1,4 @@
-import {
-	BufferJSON,
-	initAuthCreds,
-	proto,
-	type AuthenticationCreds,
-} from "@whiskeysockets/baileys";
+import * as baileys from "@whiskeysockets/baileys";
 import WhatsappAuthState from "../models/whatsapp/WhatsappAuthState.js";
 
 async function read(sessionId: string, type: string) {
@@ -15,7 +10,7 @@ async function read(sessionId: string, type: string) {
 
 		if (!data) return null;
 
-		return JSON.parse(data.data, BufferJSON.reviver);
+		return JSON.parse(data.data, baileys.BufferJSON.reviver);
 	} catch (e: any) {
 		console.log("Trying to read non existent session data");
 		console.log(e.toString());
@@ -25,7 +20,7 @@ async function read(sessionId: string, type: string) {
 
 async function write(sessionId: string, data: any, type: string) {
 	try {
-		data = JSON.stringify(data, BufferJSON.replacer);
+		data = JSON.stringify(data, baileys.BufferJSON.replacer);
 
 		await WhatsappAuthState.findOneAndUpdate(
 			{ type, sessionId },
@@ -46,8 +41,8 @@ async function removeData(sessionId: string, type: string) {
 }
 
 export const initSession = async (sessionId: string) => {
-	const creds: AuthenticationCreds =
-		(await read(sessionId, "creds")) || initAuthCreds();
+	const creds: baileys.AuthenticationCreds =
+		(await read(sessionId, "creds")) || baileys.initAuthCreds();
 
 	return {
 		state: {
@@ -60,7 +55,8 @@ export const initSession = async (sessionId: string) => {
 						ids.map(async (id: string) => {
 							let value = await read(sessionId, `authstore-${type}-${id}`);
 							if (type === "app-state-sync-key" && value) {
-								value = proto.Message.AppStateSyncKeyData.fromObject(value);
+								value =
+									baileys.proto.Message.AppStateSyncKeyData.fromObject(value);
 							}
 
 							data[id] = value;

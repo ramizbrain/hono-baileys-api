@@ -6,7 +6,7 @@ import {
 	type ConnectionState,
 	type WASocket,
 } from "@whiskeysockets/baileys";
-import Session from "../models/Session.js";
+import WhatsappAuthState from "../models/whatsapp/WhatsappAuthState.js";
 import { WAStatus } from "../types/status-connection.js";
 import { logger } from "../utils/logger.js";
 import { initSession } from "./auth-session.js";
@@ -23,14 +23,11 @@ export default class WhatsappClient {
 	static readonly RECONNECT_INTERVAL = 1000;
 	private static readonly sessions = new Map<SessionId, Session>();
 	private static retries = new Map<SessionId, number>();
-	constructor() {
-		this.init();
-	}
 
-	private async init() {
-		const storedSession = await Session.find();
+	static async init() {
+		const storedSession = await WhatsappAuthState.find();
 		for (const session of storedSession) {
-			await WhatsappClient.createSession(session._id.toString());
+			await WhatsappClient.createSession(session.sessionId);
 		}
 	}
 
@@ -80,12 +77,13 @@ export default class WhatsappClient {
 				return;
 			}
 
-			if (!restartRequired) {
-				console.info(
-					{ attempts: this.retries.get(sessionId) ?? 1, sessionId },
-					"Reconnecting..."
-				);
-			}
+			// if (!restartRequired) {
+			// 	console.info(
+			// 		{ attempts: this.retries.get(sessionId) ?? 1, sessionId },
+			// 		"Reconnecting..."
+			// 	);
+			// }
+			// console.log(restartRequired, "ok");
 			setTimeout(
 				() => this.createSession(sessionId),
 				restartRequired ? 0 : this.RECONNECT_INTERVAL
@@ -126,7 +124,38 @@ export default class WhatsappClient {
 			}
 			if (connection === "close") handleConnectionClose();
 			if (connection === "connecting")
-				this.updateWaConnection(sessionId, WAStatus.PullingWAData);
+				this.updateWaConnection(sessionId, WAStatus.Connecting);
 		});
+	}
+
+	static getSessionStatus(session: Session) {
+		const state = ["CONNECTING", "CONNECTED", "DISCONNECTING", "DISCONNECTED"];
+		let status = state[(session.ws as any).readyState];
+		status = session.user ? "AUTHENTICATED" : status;
+		return session.waStatus !== WAStatus.Unknown
+			? session.waStatus
+			: status.toLowerCase();
+	}
+
+	static listSessions() {
+		return Array.from(this.sessions.entries()).map(([id, session]) => ({
+			id,
+			status: this.getSessionStatus(session),
+		}));
+	}
+
+	static getSession(sessionId: string) {
+		return this.sessions.get(sessionId);
+	}
+
+	static async deleteSession(sessionId: string) {
+		await WhatsappAuthState.deleteMany({
+			sessionId,
+		});
+		this.sessions.get(sessionId)?.destroy();
+	}
+
+	static sessionExists(sessionId: string) {
+		return this.sessions.has(sessionId);
 	}
 }

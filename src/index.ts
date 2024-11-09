@@ -1,19 +1,27 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
+import WhatsappAuthState from "../models/whatsapp/WhatsappAuthState.js";
+import WhatsappClient from "../whatsapp/client.js";
 import { connectToMongoDB } from "./db.js";
+import sessionRoute from "./routes/session.route.js";
 
-connectToMongoDB();
+connectToMongoDB().then(async () => {
+	await WhatsappClient.init();
 
-const app = new Hono();
+	console.log(await WhatsappAuthState.find());
 
-app.get("/", (c) => {
-	return c.text("Hello Hono!");
-});
+	const app = new Hono({ strict: false });
+	app.route("/session", sessionRoute);
 
-const port = 3000;
-console.log(`Server is running on http://localhost:${port}`);
+	app.get("/", (c) => {
+		return c.text("Hello Hono!");
+	});
 
-serve({
-	fetch: app.fetch,
-	port,
+	const port = 3000;
+	console.log(`Server is running on http://localhost:${port}`);
+
+	serve({
+		fetch: app.fetch,
+		port,
+	});
 });
