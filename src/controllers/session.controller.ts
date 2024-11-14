@@ -15,7 +15,13 @@ export const findBySessionId = async (c: Context) => {
 			400
 		);
 	}
-	return c.json(WhatsappClient.getSession(sessionId));
+
+	return c.text(
+		WhatsappClient.getSessionStatus(
+			WhatsappClient.getSession(sessionId)!
+		)?.toString() || "",
+		200
+	);
 };
 
 export const create = async (c: Context) => {

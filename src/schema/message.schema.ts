@@ -11,6 +11,7 @@ export const jidSchema = z
 	.string()
 	.refine(
 		(jid) =>
+			!/\s/.test(jid) ||
 			isJidUser(jid) ||
 			isJidGroup(jid) ||
 			isJidBroadcast(jid) ||
