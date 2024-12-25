@@ -11,4 +11,9 @@ messageRoute.post(
 	messageController.send
 );
 
+messageRoute.post(
+	"/image",
+	messageController.sendImage
+);
+
 export default messageRoute;
