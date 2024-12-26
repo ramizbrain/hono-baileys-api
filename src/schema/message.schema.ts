@@ -27,10 +27,21 @@ export const textMessageSchema = z.object({
 
 export type ITextMessage = z.infer<typeof textMessageSchema>;
 
-export const imageMessageSchema = z.object({
-  file: z.instanceof(File),
-  jid: jidSchema,
-  caption: z.string().optional(),
-});
+// const MAX_FILE_SIZE = 1024 * 1024 * 5;
 
-export type IImageMessage = z.infer<typeof imageMessageSchema>;
+// const ACCEPTED_IMAGE_TYPES = ["jpeg", "jpg", "png", "webp"];
+
+// export const imageMessageSchema = z.object({
+//   file: z
+//     .instanceof(File)
+//     .refine((file) => file.size <= MAX_FILE_SIZE, {
+//       message: `The image is too large.`,
+//     })
+//     .refine((file) => ACCEPTED_IMAGE_TYPES.includes(file.type), {
+//       message: "Please upload a valid image file (JPEG, PNG, or WebP).",
+//     }),
+//   jid: jidSchema,
+//   caption: z.string().optional(),
+// });
+
+// export type IImageMessage = z.infer<typeof imageMessageSchema>;
