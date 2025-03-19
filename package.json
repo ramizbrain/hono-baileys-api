@@ -3,7 +3,8 @@
   "type": "module",
   "scripts": {
     "dev": "source .env && tsx watch src/index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "start": "source .env && node dist/src/index.js"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.5",
