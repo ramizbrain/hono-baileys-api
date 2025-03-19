@@ -13,7 +13,7 @@ sessionRoute.get(
 	sessionController.findBySessionId
 );
 
-sessionRoute.get(
+sessionRoute.post(
 	"/:sessionId/:phoneNumber",
 	zValidator("param", sessionSchema),
 	sessionController.create

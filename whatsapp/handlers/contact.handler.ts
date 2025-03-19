@@ -5,7 +5,7 @@ import ContactModel, {
 import type { IGroupMetaData } from "../../models/whatsapp/GroupMetaDataModel.js";
 import GroupMetaDataModel from "../../models/whatsapp/GroupMetaDataModel.js";
 import type { BaileysEventHandler } from "../../types/baileys.js";
-import type { IHandler } from "../contracts/IHandler.js";
+import type { IHandler } from "../contracts/ihandler.js";
 
 export default class ContactHandler implements IHandler {
 	private listening = false;

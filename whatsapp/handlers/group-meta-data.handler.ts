@@ -4,7 +4,7 @@ import GroupMetaDataModel, {
 } from "../../models/whatsapp/GroupMetaDataModel.js";
 import type { BaileysEventHandler } from "../../types/baileys.js";
 import { logger } from "../../utils/logger.js";
-import type { IHandler } from "../contracts/IHandler.js";
+import type { IHandler } from "../contracts/ihandler.js";
 
 export class GroupMetaDataHandler implements IHandler {
 	listening = false;

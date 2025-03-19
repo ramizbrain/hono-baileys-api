@@ -1,32 +1,48 @@
-# Baileys Api
+# Wakuu WhatsApp API
 
-## Features
+API untuk integrasi WhatsApp menggunakan Hono dan Baileys
 
-- [x] Create new session
-  - [x] Pairing Code
-  - [ ] Qr Code (Maybe not implemented, you can contribute if you want)
-- [x] Get Session
-- [x] Delete Session
-- [x] Contacts
-- [x] Chats
-- [x] Groups
-- [ ] Messages (I don't think this is really needed, but if you want to implement it, you can contribute)
-- [ ] Sending Messages (includes text, images, videos, documents, locations, files, and etc)
+## Instalasi
+```bash
+npm install
+npm run dev
+```
 
-## Possible Idea from this project
+## Endpoint Utama
 
-- You can use this api to create whatsapp blast for this, use queue pattern to send messages to whatsapp
+### 🛠 Manajemen Session
+- `POST /session/:sessionId/:phoneNumber` - Membuat sesi baru
+- `GET /session` - List semua sesi
+- `GET /session/:sessionId` - Detail sesi
+- `DELETE /session/:sessionId` - Hapus sesi
 
-## Not Possible Idea from this project based on current code
+### 💬 Pesan
+- `POST /:sessionId/messages` - Kirim pesan
+```json
+{
+  "chatId": "628123456789@s.whatsapp.net",
+  "message": "Isi pesan"
+}
+```
 
-- Chatbot: because current code is not designed for that, you can implement it if you want with webhook or something else
+### 📱 Kontak
+- `GET /:sessionId/contacts` - List kontak
+- `GET /:sessionId/contacts/blocklist` - List kontak diblokir
 
-## Contributing
+### 👥 Grup
+- `GET /:sessionId/groups` - List grup
 
-If you want to contribute, you can do it in many ways, for example:
+## Contoh Penggunaan
+```bash
+# Inisiasi sesi
+curl -X POST http://localhost:3000/session/sesi-saya/628123456789
 
-- Create an issue
-- Create a pull request
-- Create a discussion
-- Create a feature request
-- Create a bug report
+# Kirim pesan
+curl -X POST -H "Content-Type: application/json" -d '{
+  "chatId": "628123456789@s.whatsapp.net",
+  "message": "Pesan test"
+}' http://localhost:3000/sesi-saya/messages
+```
+
+## Lisensi
+MIT
